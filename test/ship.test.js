@@ -1,72 +1,63 @@
-import { expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, test } from '@jest/globals';
 import createShip from '../src/ship';
 
-describe('Ship factory', () => {
-  test('Different types of ships can be created', () => {
-    const carrier = createShip('carrier');
-    expect(carrier.getLength()).toBe(5);
+describe('ship factory', () => {
+  describe('when creating a ship', () => {
+    test('should set the length based on type', () => {
+      const carrier = createShip('carrier');
+      const battleship = createShip('battleship');
+      const cruiser = createShip('cruiser');
+      const submarine = createShip('submarine');
+      const destroyer = createShip('destroyer');
 
-    const battleship = createShip('battleship');
-    expect(battleship.getLength()).toBe(4);
+      expect(carrier.getLength()).toBe(5);
+      expect(battleship.getLength()).toBe(4);
+      expect(cruiser.getLength()).toBe(3);
+      expect(submarine.getLength()).toBe(2);
+      expect(destroyer.getLength()).toBe(1);
+    });
 
-    const cruiser = createShip('cruiser');
-    expect(cruiser.getLength()).toBe(3);
+    test('should return null when requested type is invalid', () => {
+      const nullShip = createShip('this ship does not exist');
+      const blankShip = createShip();
 
-    const submarine = createShip('submarine');
-    expect(submarine.getLength()).toBe(2);
-
-    const destroyer = createShip('destroyer');
-    expect(destroyer.getLength()).toBe(1);
-
-    const nullShip = createShip('this ship does not exist');
-    expect(nullShip).toStrictEqual(null);
-
-    const blankShip = createShip();
-    expect(blankShip).toStrictEqual(null);
+      expect(nullShip).toStrictEqual(null);
+      expect(blankShip).toStrictEqual(null);
+    });
   });
 
-  test('Ships can be hit', () => {
-    const carrier = createShip('carrier');
+  describe('when a ship is targeted', () => {
+    let cruiser;
 
-    carrier.hit(1);
-    expect(carrier.getHits()).toStrictEqual([false, true, false, false, false]);
+    beforeEach(() => {
+      cruiser = createShip('cruiser');
+    });
 
-    carrier.hit(3);
-    expect(carrier.getHits()).toStrictEqual([false, true, false, true, false]);
-  });
-  test('Trying to hit an already-hit spot does nothing', () => {
-    const battleship = createShip('battleship');
+    test('can be hit', () => {
+      cruiser.hit(1);
+      expect(cruiser.getHits()).toStrictEqual([false, true, false]);
+    });
 
-    battleship.hit(2);
-    expect(battleship.getHits()).toStrictEqual([false, false, true, false]);
+    test('should do nothing if targeting an already-hit spot', () => {
+      cruiser.hit(2);
+      cruiser.hit(2);
+      expect(cruiser.getHits()).toStrictEqual([false, false, true]);
+    });
 
-    battleship.hit(2);
-    expect(battleship.getHits()).toStrictEqual([false, false, true, false]);
-  });
-  test('Trying to hit a spot outside the ship does nothing', () => {
-    const battleship = createShip('battleship');
-    expect(battleship.getHits()).toStrictEqual([false, false, false, false]);
+    test('should do nothing if targeted spot is out of range', () => {
+      cruiser.hit(-1);
+      cruiser.hit(100);
+      cruiser.hit('1');
+      cruiser.hit();
+      expect(cruiser.getHits()).toStrictEqual([false, false, false]);
+    });
 
-    battleship.hit(-1);
-    expect(battleship.getHits()).toStrictEqual([false, false, false, false]);
-
-    battleship.hit(100);
-    expect(battleship.getHits()).toStrictEqual([false, false, false, false]);
-
-    battleship.hit('1');
-    expect(battleship.getHits()).toStrictEqual([false, false, false, false]);
-
-    battleship.hit();
-    expect(battleship.getHits()).toStrictEqual([false, false, false, false]);
-  });
-  test('A ship can be sunk', () => {
-    const cruiser = createShip('cruiser');
-    expect(cruiser.isSunk()).toBe(false);
-    cruiser.hit(0);
-    expect(cruiser.isSunk()).toBe(false);
-    cruiser.hit(1);
-    expect(cruiser.isSunk()).toBe(false);
-    cruiser.hit(2);
-    expect(cruiser.isSunk()).toBe(true);
+    test('should sink if all spots are hit', () => {
+      expect(cruiser.isSunk()).toBe(false);
+      cruiser.hit(0);
+      cruiser.hit(1);
+      cruiser.hit(2);
+      expect(cruiser.isSunk()).toBe(true);
+    });
   });
 });
