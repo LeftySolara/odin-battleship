@@ -1,9 +1,9 @@
 const SHIP_LENGTHS = Object.freeze({
-  carrier: 5,
-  battleship: 4,
-  cruiser: 3,
-  submarine: 2,
   destroyer: 1,
+  submarine: 2,
+  cruiser: 3,
+  battleship: 4,
+  carrier: 5,
 });
 
 const createShip = (type) => {
@@ -30,12 +30,7 @@ const createShip = (type) => {
   const getLength = () => length;
   const getHits = () => hits;
 
-  return {
-    hit,
-    isSunk,
-    getLength,
-    getHits,
-  };
+  return { hit, isSunk, getLength, getHits };
 };
 
 export default createShip;
