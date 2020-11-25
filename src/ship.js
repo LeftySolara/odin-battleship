@@ -1,6 +1,9 @@
+/**
+ * Length for each ship. Based on the 1990 Milton Bradley rules.
+ */
 const SHIP_LENGTHS = Object.freeze({
-  destroyer: 1,
-  submarine: 2,
+  destroyer: 2,
+  submarine: 3,
   cruiser: 3,
   battleship: 4,
   carrier: 5,

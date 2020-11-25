@@ -13,8 +13,8 @@ describe('ship factory', () => {
       expect(carrier.getLength()).toBe(5);
       expect(battleship.getLength()).toBe(4);
       expect(cruiser.getLength()).toBe(3);
-      expect(submarine.getLength()).toBe(2);
-      expect(destroyer.getLength()).toBe(1);
+      expect(submarine.getLength()).toBe(3);
+      expect(destroyer.getLength()).toBe(2);
     });
 
     test('should return null when requested type is invalid', () => {
