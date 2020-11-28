@@ -35,6 +35,12 @@ const shipFactory = (shipType) => {
   const length = SHIP_LENGTHS[shipType];
   const hits = Array(length).fill(false);
 
+  /**
+   * Marks a part of the ship as being hit. If the requested position does not exist,
+   * does nothing.
+   *
+   * @param {number} position The position of the ship to hit.
+   */
   const hit = (position) => {
     if (typeof position !== 'number' || position < 0 || position >= length) {
       return;
