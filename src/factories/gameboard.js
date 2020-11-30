@@ -27,20 +27,7 @@ const gameboardFactory = () => {
    * @returns {bool} True if the coordinate is a valid board position, false otherwise.
    */
   const isValidCoordinate = (coordinate) => {
-    if (typeof coordinate !== 'string') {
-      return false;
-    }
-    const column = parseInt(coordinate.substring(1), 10);
-    const row = coordinate.charAt(0);
-
-    if (!/^[A-J]$/i.test(row)) {
-      return false;
-    }
-    if (Number.isNaN(column) || column <= 0 || column > 10) {
-      return false;
-    }
-
-    return true;
+    return /^[A-J]([1-9]|1[0])$/i.test(coordinate);
   };
 
   /**
