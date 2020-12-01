@@ -1,9 +1,10 @@
 import React from 'react';
+import Game from './components/game';
 
 function App() {
   return (
     <div className="App">
-      <h1>Hello World!</h1>
+      <Game />
     </div>
   );
 }

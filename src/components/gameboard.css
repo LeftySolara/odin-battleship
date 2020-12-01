@@ -1,0 +1,18 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  grid-gap: 0 0;
+  width: 50%;
+  height: 50%;
+}
+
+.grid-tile {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  background-color: wheat;
+  border: 1px solid black;
+  text-align: center;
+}

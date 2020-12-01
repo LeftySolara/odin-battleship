@@ -21,6 +21,11 @@ const gameboardFactory = () => {
   const getShips = () => fleet;
 
   /**
+   * Returns the board array.
+   */
+  const getBoard = () => board;
+
+  /**
    * Determintes if a coordinate is a valid position on the board.
    *
    * @param {string} coordinate The coordinate to test.
@@ -207,7 +212,15 @@ const gameboardFactory = () => {
     return !fleet.find((target) => target.ship.isSunk() === false);
   };
 
-  return { placeShip, receiveAttack, allShipsSunk, getTile, getShip, getShips };
+  return {
+    placeShip,
+    receiveAttack,
+    allShipsSunk,
+    getTile,
+    getShip,
+    getShips,
+    getBoard,
+  };
 };
 
 export default gameboardFactory;
