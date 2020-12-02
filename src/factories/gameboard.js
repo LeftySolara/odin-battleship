@@ -4,7 +4,7 @@ const gameboardFactory = () => {
   let nextShipID = 0;
   const fleet = [];
 
-  const board = Array(10)
+  const grid = Array(10)
     .fill(null)
     .map(() => Array(10).fill(null));
 
@@ -23,7 +23,7 @@ const gameboardFactory = () => {
   /**
    * Returns the board array.
    */
-  const getBoard = () => board;
+  const getGrid = () => grid;
 
   /**
    * Determintes if a coordinate is a valid position on the board.
@@ -89,13 +89,13 @@ const gameboardFactory = () => {
     // Check for other ships.
     if (orientation === 'vertical') {
       for (let i = 0; i < shipLength; i += 1) {
-        if (board[originIndex.row + i][originIndex.column] !== null) {
+        if (grid[originIndex.row + i][originIndex.column] !== null) {
           return true;
         }
       }
     } else if (orientation === 'horizontal') {
       for (let i = 0; i < shipLength; i += 1) {
-        if (board[originIndex.row][originIndex.column + i] !== null) {
+        if (grid[originIndex.row][originIndex.column + i] !== null) {
           return true;
         }
       }
@@ -129,11 +129,11 @@ const gameboardFactory = () => {
     const origin = coordinateToGridIndex(coordinate);
     if (orientation === 'vertical') {
       for (let i = 0; i < ship.getLength(); i += 1) {
-        board[origin.row + i][origin.column] = shipID;
+        grid[origin.row + i][origin.column] = shipID;
       }
     } else if (orientation === 'horizontal') {
       for (let i = 0; i < ship.getLength(); i += 1) {
-        board[origin.row][origin.column + i] = shipID;
+        grid[origin.row][origin.column + i] = shipID;
       }
     }
     fleet.push({ ship, orientation, id: shipID, origin: coordinate });
@@ -150,7 +150,7 @@ const gameboardFactory = () => {
       return null;
     }
     const gridIndex = coordinateToGridIndex(coordinate);
-    return board[gridIndex.row][gridIndex.column];
+    return grid[gridIndex.row][gridIndex.column];
   };
 
   /**
@@ -188,8 +188,8 @@ const gameboardFactory = () => {
 
     // Attack missed
     if (targetID === null) {
-      const boardIndex = coordinateToGridIndex(coordinate);
-      board[boardIndex.row][boardIndex.column] = -1;
+      const gridIndex = coordinateToGridIndex(coordinate);
+      grid[gridIndex.row][gridIndex.column] = -1;
       return false;
     }
     // Tile already registered as missed attack
@@ -219,7 +219,7 @@ const gameboardFactory = () => {
     getTile,
     getShip,
     getShips,
-    getBoard,
+    getGrid,
   };
 };
 
