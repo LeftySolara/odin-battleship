@@ -51,4 +51,35 @@ describe('gameboard object', () => {
       expect(board.placeShip('cruiser', 'J', '3', true)).toBe(false);
     });
   });
+
+  describe('when an attack is received', () => {
+    beforeEach(() => {
+      board.placeShip('cruiser', 'C', '5');
+    });
+
+    test('should determine if the attack hit a ship', () => {
+      expect(board.receiveAttack('C', '5')).toBe(true);
+      expect(board.receiveAttack('C', '6')).toBe(true);
+      expect(board.receiveAttack('C', '7')).toBe(true);
+      expect(board.receiveAttack('C', '8')).toBe(false);
+      expect(board.receiveAttack('D', '5')).toBe(false);
+    });
+
+    test('should send the "hit" function to the correct ship', () => {
+      board.placeShip('submarine', 'H', '2', false);
+      board.receiveAttack('C', '5');
+
+      expect(board.getShip('C', '5').getHits()[0]).toBe(true);
+      expect(board.getShip('C', '5').getHits()[1]).toBe(false);
+      expect(board.getShip('H', '2').getHits()[0]).toBe(false);
+      expect(board.getShip('H', '2').getHits()[1]).toBe(false);
+    });
+
+    test('should record the coordinates of a missed shot', () => {
+      board.receiveAttack('A', '1');
+      board.receiveAttack('C', '5');
+      expect(board.getMissedShots().includes(['A', '1'])).toBe(true);
+      expect(board.getMissedShots().includes(['C', '5'])).toBe(false);
+    });
+  });
 });
