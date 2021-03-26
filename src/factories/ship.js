@@ -27,11 +27,12 @@ const SHIP_LENGTHS = {
  *
  * @param {string} shipType The type of ship to create.
  */
-const shipFactory = (shipType) => {
+const shipFactory = (shipType, shipID) => {
   if (!SHIP_TYPES.includes(shipType)) {
     return null;
   }
 
+  const id = shipID;
   const length = SHIP_LENGTHS[shipType];
   const hits = Array(length).fill(false);
 
@@ -55,7 +56,7 @@ const shipFactory = (shipType) => {
   const getLength = () => length;
   const getHits = () => hits;
 
-  return { hit, isSunk, getLength, getHits };
+  return { hit, isSunk, getLength, getHits, id };
 };
 
 export default shipFactory;

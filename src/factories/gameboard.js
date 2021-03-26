@@ -1,12 +1,63 @@
 import shipFactory from './ship';
 
 /**
+ * @typedef {object} Point
+ * @property row {number} The row number in the grid.
+ * @property col {number} The column number in the grid.
+ */
+
+/**
+ * Possible states for a board tile.
+ *
+ * Hidden: the tile has not been interacted with.
+ * Hit: the tile contains a ship and been targeted by an attack.
+ * Missed: the tile does not contain a ship and has been targeted by an attack.
+ */
+const TILE_STATES = {
+  hidden: 0,
+  hit: 1,
+  missed: 2,
+};
+
+/**
  * Creates a new gameboard object.
  */
 const gameboardFactory = () => {
-  const grid = Array(10)
-    .fill(null)
-    .map(() => Array(10).fill(null));
+  const grid = [];
+  const ships = [];
+  let nextShipID = 0;
+
+  /**
+   * Creates the grid and fills it with empty tiles.
+   */
+  const initialize = () => {
+    for (let rowIndex = 0; rowIndex < 10; ++rowIndex) {
+      const row = [];
+
+      for (let colIndex = 0; colIndex < 10; ++colIndex) {
+        row.push({
+          state: TILE_STATES.hidden,
+          shipID: null,
+          shipPosition: null,
+        });
+      }
+      grid.push(row);
+    }
+  };
+
+  /**
+   * Converts a grid coordinate into array indices.
+   *
+   * @param {string} row The row name of the coordinate.
+   * @param {string} col The column number of the coordinate.
+   * @returns {Point} An object containing the array indices for the coordinate.
+   */
+  const coordinateToIndex = (row, col) => {
+    const rowIndex = row.toUpperCase().charCodeAt(0) - 65;
+    const colIndex = parseInt(col, 10) - 1;
+
+    return { row: rowIndex, col: colIndex };
+  };
 
   /**
    * Determines if the given coordinate exists on the board.
@@ -15,8 +66,8 @@ const gameboardFactory = () => {
    * @param {string} col The column on the board.
    */
   const isValidCoordinate = (row, col) => {
-    const rowAscii = row.toUpperCase().charCodeAt(0);
-    return rowAscii >= 65 && rowAscii <= 74 && col >= 1 && col <= 10;
+    const point = coordinateToIndex(row, col);
+    return point.row >= 0 && point.row <= 9 && point.col >= 0 && point.col <= 9;
   };
 
   /**
@@ -30,27 +81,26 @@ const gameboardFactory = () => {
    * @returns {bool} True if the ship will overlap, false otherwise.
    */
   const shipWillOverlap = (shipLength, row, col, vertical) => {
-    const rowNumber = row.toUpperCase().charCodeAt(0) - 65;
-    const colNumber = parseInt(col, 10) - 1;
+    const point = coordinateToIndex(row, col);
 
     // Check for grid border.
-    if (vertical && rowNumber + shipLength >= grid.length) {
+    if (vertical && point.row + shipLength >= grid.length) {
       return true;
     }
-    if (colNumber + shipLength >= grid.length) {
+    if (point.col + shipLength >= grid.length) {
       return true;
     }
 
     // Check for other ships.
     if (vertical) {
       for (let i = 0; i < shipLength; ++i) {
-        if (grid[rowNumber + i][colNumber] !== null) {
+        if (grid[point.row + i][point.col].shipID !== null) {
           return true;
         }
       }
     } else {
       for (let i = 0; i < shipLength; ++i) {
-        if (grid[rowNumber][colNumber + i] !== null) {
+        if (grid[point.row][point.col + i].shipID !== null) {
           return true;
         }
       }
@@ -74,24 +124,26 @@ const gameboardFactory = () => {
       return false;
     }
 
-    const ship = shipFactory(shipType);
+    const ship = shipFactory(shipType, nextShipID);
     if (shipWillOverlap(ship.getLength(), row, col, vertical)) {
       return false;
     }
 
-    const rowNumber = row.toUpperCase().charCodeAt(0) - 65;
-    const colNumber = parseInt(col, 10) - 1;
-
+    const point = coordinateToIndex(row, col);
     if (vertical) {
       for (let i = 0; i < ship.getLength(); ++i) {
-        grid[rowNumber + i][colNumber] = true;
+        grid[point.row + i][point.col].shipID = nextShipID;
+        grid[point.row + i][point.col].shipPosition = i;
       }
     } else {
       for (let i = 0; i < ship.getLength(); ++i) {
-        grid[rowNumber][colNumber + i] = true;
+        grid[point.row][point.col + i].shipID = nextShipID;
+        grid[point.row][point.col + i].shipPosition = i;
       }
     }
 
+    ships.push(ship);
+    ++nextShipID;
     return true;
   };
 
@@ -104,12 +156,47 @@ const gameboardFactory = () => {
    * @returns {bool} True if the tile has a ship, false otherwise.
    */
   const tileHasShip = (row, col) => {
-    const rowNumber = row.toUpperCase().charCodeAt(0) - 65;
-    const colNumber = parseInt(col, 10) - 1;
-    return isValidCoordinate(row, col) && grid[rowNumber][colNumber] !== null;
+    const point = coordinateToIndex(row, col);
+    return (
+      isValidCoordinate(row, col) && grid[point.row][point.col].shipID !== null
+    );
   };
 
-  return { placeShip, tileHasShip };
+  /**
+   *
+   * @param {string} row The row of the tile being hit.
+   * @param {string} col The column of the tile being hit.
+   */
+  const receiveAttack = (row, col) => {
+    const point = coordinateToIndex(row, col);
+
+    if (!tileHasShip(row, col)) {
+      grid[point.row][point.col].state = TILE_STATES.missed;
+      return;
+    }
+    grid[point.row][point.col].state = TILE_STATES.hit;
+
+    const shipIndex = ships.findIndex(
+      (ship) => ship.id === grid[point.row][point.col].shipID,
+    );
+    ships[shipIndex].hit(grid[point.row][point.col].shipPosition);
+  };
+
+  /**
+   *
+   * @param {string} row The row of the requested tile.
+   * @param {string} col The column of the requested tile.
+   * @returns {number} 0 if the tile is hidden, 1 if it is hit, or 2 if it has been missed.
+   */
+  const getTileState = (row, col) => {
+    const point = coordinateToIndex(row, col);
+    return grid[point.row][point.col].state;
+  };
+
+  const getShip = (id) => ships.find((ship) => ship.id === id);
+
+  initialize();
+  return { placeShip, tileHasShip, receiveAttack, getTileState, getShip };
 };
 
-export default gameboardFactory;
+export { gameboardFactory as default, TILE_STATES };

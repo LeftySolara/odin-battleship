@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import gameboardFactory from '../gameboard';
+import gameboardFactory, { TILE_STATES } from '../gameboard';
 
 describe('gameboard object', () => {
   let board;
@@ -57,29 +57,34 @@ describe('gameboard object', () => {
       board.placeShip('cruiser', 'C', '5');
     });
 
-    test('should determine if the attack hit a ship', () => {
-      expect(board.receiveAttack('C', '5')).toBe(true);
-      expect(board.receiveAttack('C', '6')).toBe(true);
-      expect(board.receiveAttack('C', '7')).toBe(true);
-      expect(board.receiveAttack('C', '8')).toBe(false);
-      expect(board.receiveAttack('D', '5')).toBe(false);
-    });
-
-    test('should send the "hit" function to the correct ship', () => {
-      board.placeShip('submarine', 'H', '2', false);
+    test('should register a hit tile', () => {
       board.receiveAttack('C', '5');
+      expect(board.getTileState('C', '5')).toBe(TILE_STATES.hit);
+      expect(board.getTileState('C', '5')).toBe(TILE_STATES.hit);
+      expect(board.getTileState('C', '5')).toBe(TILE_STATES.hit);
 
-      expect(board.getShip('C', '5').getHits()[0]).toBe(true);
-      expect(board.getShip('C', '5').getHits()[1]).toBe(false);
-      expect(board.getShip('H', '2').getHits()[0]).toBe(false);
-      expect(board.getShip('H', '2').getHits()[1]).toBe(false);
+      board.receiveAttack('C', '6');
+      expect(board.getTileState('C', '6')).toBe(TILE_STATES.hit);
+      expect(board.getTileState('C', '6')).toBe(TILE_STATES.hit);
+      expect(board.getTileState('C', '6')).toBe(TILE_STATES.hit);
+
+      board.receiveAttack('C', '7');
+      expect(board.getTileState('C', '7')).toBe(TILE_STATES.hit);
+      expect(board.getTileState('C', '7')).toBe(TILE_STATES.hit);
+      expect(board.getTileState('C', '7')).toBe(TILE_STATES.hit);
     });
 
-    test('should record the coordinates of a missed shot', () => {
+    test('should register a missed tile', () => {
       board.receiveAttack('A', '1');
+      expect(board.getTileState('A', '1')).toBe(TILE_STATES.missed);
+    });
+
+    test('should send hits to the correct ship', () => {
       board.receiveAttack('C', '5');
-      expect(board.getMissedShots().includes(['A', '1'])).toBe(true);
-      expect(board.getMissedShots().includes(['C', '5'])).toBe(false);
+      board.receiveAttack('C', '6');
+      board.receiveAttack('C', '7');
+
+      expect(board.getShip(0).isSunk()).toBe(true);
     });
   });
 });
