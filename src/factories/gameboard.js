@@ -17,6 +17,7 @@ const TILE_STATES = {
   hidden: 0,
   hit: 1,
   missed: 2,
+  out_of_bounds: 3,
 };
 
 /**
@@ -168,6 +169,10 @@ const gameboardFactory = () => {
    * @param {string} col The column of the tile being hit.
    */
   const receiveAttack = (row, col) => {
+    if (!isValidCoordinate(row, col)) {
+      return;
+    }
+
     const point = coordinateToIndex(row, col);
 
     if (!tileHasShip(row, col)) {
@@ -189,14 +194,26 @@ const gameboardFactory = () => {
    * @returns {number} 0 if the tile is hidden, 1 if it is hit, or 2 if it has been missed.
    */
   const getTileState = (row, col) => {
+    if (!isValidCoordinate(row, col)) {
+      return TILE_STATES.out_of_bounds;
+    }
+
     const point = coordinateToIndex(row, col);
     return grid[point.row][point.col].state;
   };
 
   const getShip = (id) => ships.find((ship) => ship.id === id);
+  const getShips = () => ships;
 
   initialize();
-  return { placeShip, tileHasShip, receiveAttack, getTileState, getShip };
+  return {
+    placeShip,
+    tileHasShip,
+    receiveAttack,
+    getTileState,
+    getShip,
+    getShips,
+  };
 };
 
 export { gameboardFactory as default, TILE_STATES };
