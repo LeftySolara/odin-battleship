@@ -1,10 +1,20 @@
 import shipFactory from './ship';
 
 /**
+ * A gameboard coordinate represented as array indexes.
+ *
  * @typedef {object} Point
  * @property row {number} The row number in the grid.
  * @property col {number} The column number in the grid.
+ *
+ * @param {string} coordinate The coordinate on the game board.
  */
+const Point = (coordinate) => {
+  const row = coordinate.slice(0, 1).toUpperCase().charCodeAt(0) - 65;
+  const col = parseInt(coordinate.slice(1), 10) - 1;
+
+  return { row, col };
+};
 
 /**
  * Possible orientations for placing ships.
@@ -58,27 +68,12 @@ const gameboardFactory = () => {
   };
 
   /**
-   * Converts a grid coordinate into array indices.
-   *
-   * @param {string} row The row name of the coordinate.
-   * @param {string} col The column number of the coordinate.
-   * @returns {Point} An object containing the array indices for the coordinate.
-   */
-  const coordinateToIndex = (row, col) => {
-    const rowIndex = row.toUpperCase().charCodeAt(0) - 65;
-    const colIndex = parseInt(col, 10) - 1;
-
-    return { row: rowIndex, col: colIndex };
-  };
-
-  /**
    * Determines if the given coordinate exists on the board.
    *
-   * @param {string} row The row on the board.
-   * @param {string} col The column on the board.
+   * @param {string} coordinate The coordinate on the board to check.
    */
-  const isValidCoordinate = (row, col) => {
-    const point = coordinateToIndex(row, col);
+  const isValidCoordinate = (coordinate) => {
+    const point = Point(coordinate);
     return point.row >= 0 && point.row <= 9 && point.col >= 0 && point.col <= 9;
   };
 
@@ -86,36 +81,35 @@ const gameboardFactory = () => {
    * Checkes whether the placement of a ship will overlap another ship or the grid border.
    *
    * @param {string} shipLength The length of the ship.
-   * @param {string} row The row number of the ship's origin point.
-   * @param {string} col The column number of the ship's origin point.
+   * @param {string} coordinate The coordinate of the ship's origin point.
    * @param {ORIENTATION} orientation The orientation of the ship's placement.
    *
    * @returns {bool} True if the ship will overlap, false otherwise.
    */
-  const shipWillOverlap = (shipLength, row, col, orientation) => {
-    const point = coordinateToIndex(row, col);
+  const shipWillOverlap = (shipLength, coordinate, orientation) => {
+    const origin = Point(coordinate);
 
     // Check for grid border.
     if (
       orientation === ORIENTATION.vertical &&
-      point.row + shipLength >= grid.length
+      origin.row + shipLength >= grid.length
     ) {
       return true;
     }
-    if (point.col + shipLength >= grid.length) {
+    if (origin.col + shipLength >= grid.length) {
       return true;
     }
 
     // Check for other ships.
     if (orientation === ORIENTATION.vertical) {
       for (let i = 0; i < shipLength; ++i) {
-        if (grid[point.row + i][point.col].shipID !== null) {
+        if (grid[origin.row + i][origin.col].shipID !== null) {
           return true;
         }
       }
     } else {
       for (let i = 0; i < shipLength; ++i) {
-        if (grid[point.row][point.col + i].shipID !== null) {
+        if (grid[origin.row][origin.col + i].shipID !== null) {
           return true;
         }
       }
@@ -128,32 +122,31 @@ const gameboardFactory = () => {
    * Places a ship at the given coordinate on the board.
    *
    * @param {string} shipType The type of ship to place.
-   * @param {string} row The row on the board to place the ship.
-   * @param {string} col The column on the board to place the ship.
+   * @param {string} coordinate The board coordinate to place the ship's origin point.
    * @param {ORIENTATION} orientation The direction the ship should point when placed.
    *
    * @returns {bool} True if the ship is placed successfully, false otherwise.
    */
-  const placeShip = (shipType, row, col, orientation) => {
-    if (!isValidCoordinate(row, col)) {
+  const placeShip = (shipType, coordinate, orientation) => {
+    if (!isValidCoordinate(coordinate)) {
       return false;
     }
 
     const ship = shipFactory(shipType, nextShipID);
-    if (shipWillOverlap(ship.getLength(), row, col, orientation)) {
+    if (shipWillOverlap(ship.getLength(), coordinate, orientation)) {
       return false;
     }
 
-    const point = coordinateToIndex(row, col);
+    const origin = Point(coordinate);
     if (orientation === ORIENTATION.vertical) {
       for (let i = 0; i < ship.getLength(); ++i) {
-        grid[point.row + i][point.col].shipID = nextShipID;
-        grid[point.row + i][point.col].shipPosition = i;
+        grid[origin.row + i][origin.col].shipID = nextShipID;
+        grid[origin.row + i][origin.col].shipPosition = i;
       }
     } else {
       for (let i = 0; i < ship.getLength(); ++i) {
-        grid[point.row][point.col + i].shipID = nextShipID;
-        grid[point.row][point.col + i].shipPosition = i;
+        grid[origin.row][origin.col + i].shipID = nextShipID;
+        grid[origin.row][origin.col + i].shipPosition = i;
       }
     }
 
@@ -165,31 +158,28 @@ const gameboardFactory = () => {
   /**
    * Checks whether a board tile has a ship placed on it.
    *
-   * @param {string} row The row to check.
-   * @param {string} col The column to check.
-   *
+   * @param {string} coordinate The coordinate to check.
    * @returns {bool} True if the tile has a ship, false otherwise.
    */
-  const tileHasShip = (row, col) => {
-    const point = coordinateToIndex(row, col);
+  const tileHasShip = (coordinate) => {
+    const point = Point(coordinate);
     return (
-      isValidCoordinate(row, col) && grid[point.row][point.col].shipID !== null
+      isValidCoordinate(coordinate) &&
+      grid[point.row][point.col].shipID !== null
     );
   };
 
   /**
-   *
-   * @param {string} row The row of the tile being hit.
-   * @param {string} col The column of the tile being hit.
+   * @param {string} coordinate The place on the board to attack.
    */
-  const receiveAttack = (row, col) => {
-    if (!isValidCoordinate(row, col)) {
+  const receiveAttack = (coordinate) => {
+    if (!isValidCoordinate(coordinate)) {
       return;
     }
 
-    const point = coordinateToIndex(row, col);
+    const point = Point(coordinate);
 
-    if (!tileHasShip(row, col)) {
+    if (!tileHasShip(coordinate)) {
       grid[point.row][point.col].state = TILE_STATES.missed;
       return;
     }
@@ -203,16 +193,15 @@ const gameboardFactory = () => {
 
   /**
    *
-   * @param {string} row The row of the requested tile.
-   * @param {string} col The column of the requested tile.
+   * @param {string} coordinate The place on the board to check.
    * @returns {number} 0 if the tile is hidden, 1 if it is hit, or 2 if it has been missed.
    */
-  const getTileState = (row, col) => {
-    if (!isValidCoordinate(row, col)) {
+  const getTileState = (coordinate) => {
+    if (!isValidCoordinate(coordinate)) {
       return TILE_STATES.out_of_bounds;
     }
 
-    const point = coordinateToIndex(row, col);
+    const point = Point(coordinate);
     return grid[point.row][point.col].state;
   };
 

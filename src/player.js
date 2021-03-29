@@ -7,26 +7,26 @@ const Player = () => {
    * Attacks another player's board at the given point.
    *
    * @param {Player} target The player to attack.
-   * @param {string} row The row of the attack point.
-   * @param {string} col The column of the attack point.
+   * @param {string} coordinate The board location to attack.
    */
-  const attack = (target, row, col) => {
-    target.board.receiveAttack(row, col);
+  const attack = (target, coordinate) => {
+    target.board.receiveAttack(coordinate);
   };
 
   /**
    * Attacks a random point on another player's board.
    *
    * @param {Player} target The player to attack.
-   * @returns the random point that was attacked.
+   * @returns {string} the random coordinate that was attacked.
    */
   const attackRandom = (target) => {
     const rows = 'ABCDEFGHIJ';
     const row = rows.charAt(Math.floor(Math.random() * rows.length));
     const col = Math.floor(Math.random() * 10).toString();
+    const coordinate = row.toString() + col;
 
-    attack(target, row, col);
-    return [row, col];
+    attack(target, coordinate);
+    return coordinate;
   };
 
   /**
