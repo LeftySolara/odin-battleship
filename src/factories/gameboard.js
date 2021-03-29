@@ -7,6 +7,17 @@ import shipFactory from './ship';
  */
 
 /**
+ * Possible orientations for placing ships.
+ *
+ * @enum {Number}
+ * @readonly
+ */
+const ORIENTATION = {
+  horizontal: 0,
+  vertical: 1,
+};
+
+/**
  * Possible states for a board tile.
  *
  * Hidden: the tile has not been interacted with.
@@ -77,15 +88,18 @@ const gameboardFactory = () => {
    * @param {string} shipLength The length of the ship.
    * @param {string} row The row number of the ship's origin point.
    * @param {string} col The column number of the ship's origin point.
-   * @param {bool} vertical Whether the ship would be placed vertically.
+   * @param {ORIENTATION} orientation The orientation of the ship's placement.
    *
    * @returns {bool} True if the ship will overlap, false otherwise.
    */
-  const shipWillOverlap = (shipLength, row, col, vertical) => {
+  const shipWillOverlap = (shipLength, row, col, orientation) => {
     const point = coordinateToIndex(row, col);
 
     // Check for grid border.
-    if (vertical && point.row + shipLength >= grid.length) {
+    if (
+      orientation === ORIENTATION.vertical &&
+      point.row + shipLength >= grid.length
+    ) {
       return true;
     }
     if (point.col + shipLength >= grid.length) {
@@ -93,7 +107,7 @@ const gameboardFactory = () => {
     }
 
     // Check for other ships.
-    if (vertical) {
+    if (orientation === ORIENTATION.vertical) {
       for (let i = 0; i < shipLength; ++i) {
         if (grid[point.row + i][point.col].shipID !== null) {
           return true;
@@ -116,22 +130,22 @@ const gameboardFactory = () => {
    * @param {string} shipType The type of ship to place.
    * @param {string} row The row on the board to place the ship.
    * @param {string} col The column on the board to place the ship.
-   * @param {bool} vertical If true, the ship is placed vertically on the board, pointing downward from the origin point.
+   * @param {ORIENTATION} orientation The direction the ship should point when placed.
    *
    * @returns {bool} True if the ship is placed successfully, false otherwise.
    */
-  const placeShip = (shipType, row, col, vertical = false) => {
+  const placeShip = (shipType, row, col, orientation) => {
     if (!isValidCoordinate(row, col)) {
       return false;
     }
 
     const ship = shipFactory(shipType, nextShipID);
-    if (shipWillOverlap(ship.getLength(), row, col, vertical)) {
+    if (shipWillOverlap(ship.getLength(), row, col, orientation)) {
       return false;
     }
 
     const point = coordinateToIndex(row, col);
-    if (vertical) {
+    if (orientation === ORIENTATION.vertical) {
       for (let i = 0; i < ship.getLength(); ++i) {
         grid[point.row + i][point.col].shipID = nextShipID;
         grid[point.row + i][point.col].shipPosition = i;
@@ -216,4 +230,4 @@ const gameboardFactory = () => {
   };
 };
 
-export { gameboardFactory as default, TILE_STATES };
+export { gameboardFactory as default, TILE_STATES, ORIENTATION };

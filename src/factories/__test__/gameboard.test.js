@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import gameboardFactory, { TILE_STATES } from '../gameboard';
+import gameboardFactory, { TILE_STATES, ORIENTATION } from '../gameboard';
 
 describe('gameboard object', () => {
   let board;
@@ -10,7 +10,9 @@ describe('gameboard object', () => {
 
   describe('when placing ships', () => {
     test('should allow placing ships at specific coordinates', () => {
-      expect(board.placeShip('cruiser', 'B', '3')).toBe(true);
+      expect(board.placeShip('cruiser', 'B', '3', ORIENTATION.horizontal)).toBe(
+        true,
+      );
       expect(board.tileHasShip('B', '2')).toBe(false);
       expect(board.tileHasShip('B', '3')).toBe(true);
       expect(board.tileHasShip('B', '4')).toBe(true);
@@ -19,7 +21,9 @@ describe('gameboard object', () => {
     });
 
     test('should allow placing ships vertically', () => {
-      expect(board.placeShip('cruiser', 'C', '5', true)).toBe(true);
+      expect(board.placeShip('cruiser', 'C', '5', ORIENTATION.vertical)).toBe(
+        true,
+      );
       expect(board.tileHasShip('B', '5')).toBe(false);
       expect(board.tileHasShip('C', '5')).toBe(true);
       expect(board.tileHasShip('D', '5')).toBe(true);
@@ -37,18 +41,30 @@ describe('gameboard object', () => {
     });
 
     test('should not allow ships to overlap', () => {
-      expect(board.placeShip('cruiser', 'C', '5', false)).toBe(true);
-      expect(board.placeShip('cruiser', 'B', '6', true)).toBe(false);
+      expect(board.placeShip('cruiser', 'C', '5', ORIENTATION.horizontal)).toBe(
+        true,
+      );
+      expect(board.placeShip('cruiser', 'B', '6', ORIENTATION.vertical)).toBe(
+        false,
+      );
     });
 
     test('should not allow placing ships outside grid boundries', () => {
-      expect(board.placeShip('cruiser', 'A', '11')).toBe(false);
-      expect(board.placeShip('cruiser', 'K', '2')).toBe(false);
+      expect(
+        board.placeShip('cruiser', 'A', '11', ORIENTATION.horizontal),
+      ).toBe(false);
+      expect(board.placeShip('cruiser', 'K', '2', ORIENTATION.horizontal)).toBe(
+        false,
+      );
     });
 
     test('should not allow ship to dangle off board boundries', () => {
-      expect(board.placeShip('cruiser', 'B', '10', false)).toBe(false);
-      expect(board.placeShip('cruiser', 'J', '3', true)).toBe(false);
+      expect(
+        board.placeShip('cruiser', 'B', '10', ORIENTATION.horizontal),
+      ).toBe(false);
+      expect(board.placeShip('cruiser', 'J', '3', ORIENTATION.vertical)).toBe(
+        false,
+      );
     });
   });
 
